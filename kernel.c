@@ -1,5 +1,6 @@
 #include "kernel.h"
 #include "common.h"
+#include "test.h"
 
 extern char __bss[], __bss_end[], __stack_top[];
 
@@ -48,8 +49,7 @@ void kernel_main(void)
     printf("\n\nHellow %s\n", "World!");
     printf("1 + 2 = %d, %x\n", 1 + 2, 0x1234abcd);
 
-    PANIC("failed!");
-    printf("can't reach here");
+    run_test();
 
     // 無限ループ
     for (;;)
