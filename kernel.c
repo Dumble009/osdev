@@ -3,44 +3,28 @@
 
 extern char __bss[], __bss_end[], __stack_top[];
 
-/// @brief 指定されたメモリ領域を指定された値で埋める
-/// @param buf 値埋めするメモリ領域の先頭アドレス
-/// @param c 埋めたい値
-/// @param n bufから何バイト分を値埋めするか
-/// @return bufと同じ値
-void *memset(void *buf, char c, size_t n)
-{
-    uint8_t *p = (uint8_t *)buf;
-    while (n--)
-    {
-        *p = c;
-        *p += 1;
-    }
-    return buf;
-}
-
 /// @brief SBIの処理を呼び出す関数
 /// @param arg0~arg5 SBIの処理に渡す引数
 /// @param fid ecall命令に渡すSBIのfunction id
 /// @param eid ecall命令に渡す拡張セットのID
 struct sbiret sbi_call(
-    int64_t arg0,
-    int64_t arg1,
-    int64_t arg2,
-    int64_t arg3,
-    int64_t arg4,
-    int64_t arg5,
-    int64_t fid,
-    int64_t eid)
+    int32_t arg0,
+    int32_t arg1,
+    int32_t arg2,
+    int32_t arg3,
+    int32_t arg4,
+    int32_t arg5,
+    int32_t fid,
+    int32_t eid)
 {
-    register int64_t a0 __asm__("a0") = arg0;
-    register int64_t a1 __asm__("a1") = arg1;
-    register int64_t a2 __asm__("a2") = arg2;
-    register int64_t a3 __asm__("a3") = arg3;
-    register int64_t a4 __asm__("a4") = arg4;
-    register int64_t a5 __asm__("a5") = arg5;
-    register int64_t a6 __asm__("a6") = fid;
-    register int64_t a7 __asm__("a7") = eid;
+    register int32_t a0 __asm__("a0") = arg0;
+    register int32_t a1 __asm__("a1") = arg1;
+    register int32_t a2 __asm__("a2") = arg2;
+    register int32_t a3 __asm__("a3") = arg3;
+    register int32_t a4 __asm__("a4") = arg4;
+    register int32_t a5 __asm__("a5") = arg5;
+    register int32_t a6 __asm__("a6") = fid;
+    register int32_t a7 __asm__("a7") = eid;
 
     __asm__ __volatile__("ecall"
                          : "=r"(a0), "=r"(a1)
