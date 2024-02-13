@@ -6,11 +6,6 @@
 #define dec_mark 'd'
 #define hex_mark 'x'
 
-/// @brief 指定されたメモリ領域を指定された値で埋める
-/// @param buf 値埋めするメモリ領域の先頭アドレス
-/// @param c 埋めたい値
-/// @param n bufから何バイト分を値埋めするか
-/// @return bufと同じ値
 void *memset(void *buf, char c, size_t n)
 {
     uint8_t *p = (uint8_t *)buf;
@@ -21,11 +16,6 @@ void *memset(void *buf, char c, size_t n)
     return buf;
 }
 
-/// @brief あるメモリ領域の値を別のメモリ領域にコピーする
-/// @param dst コピー先のメモリ領域のアドレス
-/// @param src コピー元のメモリ領域のアドレス
-/// @param n コピーしたいバイト数
-/// @return dstと同じアドレス
 void *memcpy(void *dst, const void *src, size_t n)
 {
     uint8_t *p = (uint8_t *)dst;
@@ -38,10 +28,6 @@ void *memcpy(void *dst, const void *src, size_t n)
     return p;
 }
 
-/// @brief 文字列をコピーする。ヌル文字を見つけるまでコピーを行う
-/// @param dst コピー先の文字列の先頭アドレス
-/// @param src コピー元の文字列の先頭アドレス
-/// @return dstと同じアドレス
 char *strcpy(char *dst, const char *src)
 {
     char *d = dst;
@@ -55,10 +41,6 @@ char *strcpy(char *dst, const char *src)
     return dst;
 }
 
-/// @brief 文字列が一致するか比較する。ヌル文字を見つけるまで比較する
-/// @param s1 比較対象の文字列1
-/// @param s2 比較対象の文字列2
-/// @return s1の方が辞書順で先ならば負、s2の方が辞書順で後ならば正の値。一致すれば0
 int strcmp(const char *s1, const char *s2)
 {
     while (*s1 && *s2)
