@@ -154,6 +154,42 @@ paddr_t alloc_pages(uint32_t n)
 
 struct process procs[PROCS_MAX];
 
+struct process *create_process(uint32_t pc)
+{
+    // 空いているプロセス管理構造体の探索
+    struct process *proc = NULL;
+    for (int i = 0; i < PROCS_MAX; i++)
+    {
+        if (procs[i].state == PROC_UNUSED)
+        {
+            proc = &procs[i];
+            break;
+        }
+    }
+
+    if (!proc)
+    {
+        PANIC("no free process slots");
+    }
+
+    // switch_context()を呼び出されても大丈夫なように、スタックにレジスタの値を積む
+    // スタックは下に伸びていくので、stackの最大番地がspの初期値になる。
+    uint32_t *sp = (uint32_t *)&proc->stack[sizeof(proc->stack)];
+    // s11~s0までの初期値を積む
+    int i = 0;
+    for (; i < 12; i++)
+    {
+        *--sp = 0;
+    }
+    *--sp = (uint32_t)pc; // ra(return address)の初期化
+
+    // 各フィールドの初期化
+    proc->pid = i + 1;
+    proc->state = PROC_RUNNABLE;
+    proc->sp = (uint32_t)sp;
+    return proc;
+}
+
 __attribute__((naked)) void switch_context(
     uint32_t *prev_sp,
     uint32_t *next_sp)
@@ -192,12 +228,77 @@ __attribute__((naked)) void switch_context(
         "ret\n");
 }
 
+// プロセス管理の動作テスト ----------
+struct process *proc_a;
+struct process *proc_b;
+
+void proc_a_entry(void)
+{
+    printf("starting process A\n");
+    int a1 = 1;
+    int a2 = 2;
+    int a3 = 3;
+    int a4 = 4;
+    int a5 = 5;
+    int a6 = 6;
+    int a7 = 7;
+    int a8 = 8;
+    int a9 = 9;
+    int a10 = 10;
+    int a11 = 11;
+    int a12 = 12;
+    int a13 = 13;
+    while (1)
+    {
+        a1 += 13;
+        a2 += 13;
+        a3 += 13;
+        a4 += 13;
+        a5 += 13;
+        a6 += 13;
+        a7 += 13;
+        a8 += 13;
+        a9 += 13;
+        a10 += 13;
+        a11 += 13;
+        a12 += 13;
+        a13 += 13;
+        printf("%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d,", a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13);
+        switch_context(&proc_a->sp, &proc_b->sp);
+
+        for (int i = 0; i < 30000000; i++)
+        {
+            __asm__ __volatile__("nop");
+        }
+    }
+}
+
+void proc_b_entry(void)
+{
+    printf("starting process B\n");
+    while (1)
+    {
+        putchar('B');
+        switch_context(&proc_b->sp, &proc_a->sp);
+
+        for (int i = 0; i < 30000000; i++)
+        {
+            __asm__ __volatile__("nop");
+        }
+    }
+}
+// プロセス管理の動作テスト ----------
+
 void kernel_main(void)
 {
     memset(__bss, 0, (size_t)__bss_end - (size_t)__bss);
 
     // 例外ハンドラのアドレスをレジスタに登録
     WRITE_CSR(stvec, (uint32_t)kernel_entry);
+
+    proc_a = create_process((uint32_t)proc_a_entry);
+    proc_b = create_process((uint32_t)proc_b_entry);
+    proc_a_entry();
 
     // 標準ライブラリのテスト
     run_test();
