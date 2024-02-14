@@ -158,7 +158,8 @@ struct process *create_process(uint32_t pc)
 {
     // 空いているプロセス管理構造体の探索
     struct process *proc = NULL;
-    for (int i = 0; i < PROCS_MAX; i++)
+    int i = 0;
+    for (; i < PROCS_MAX; i++)
     {
         if (procs[i].state == PROC_UNUSED)
         {
@@ -176,8 +177,7 @@ struct process *create_process(uint32_t pc)
     // スタックは下に伸びていくので、stackの最大番地がspの初期値になる。
     uint32_t *sp = (uint32_t *)&proc->stack[sizeof(proc->stack)];
     // s11~s0までの初期値を積む
-    int i = 0;
-    for (; i < 12; i++)
+    for (int j = 0; j < 12; j++)
     {
         *--sp = 0;
     }
@@ -228,6 +228,33 @@ __attribute__((naked)) void switch_context(
         "ret\n");
 }
 
+struct process *current_proc; // 現在実行中のプロセス
+struct process *idle_proc;    // アイドルプロセス
+
+void yield(void)
+{
+    // 次に実行されるプロセスの探索
+    struct process *next = idle_proc;
+    for (int i = 0; i < PROCS_MAX; i++)
+    {
+        struct process *proc = &procs[(current_proc->pid + i) % PROCS_MAX];
+        if (proc->state == PROC_RUNNABLE && proc->pid > 0)
+        {
+            next = proc;
+            break;
+        }
+    }
+
+    if (next == current_proc)
+    {
+        return;
+    }
+
+    struct process *prev = current_proc;
+    current_proc = next;
+    switch_context(&prev->sp, &next->sp);
+}
+
 // プロセス管理の動作テスト ----------
 struct process *proc_a;
 struct process *proc_b;
@@ -235,36 +262,10 @@ struct process *proc_b;
 void proc_a_entry(void)
 {
     printf("starting process A\n");
-    int a1 = 1;
-    int a2 = 2;
-    int a3 = 3;
-    int a4 = 4;
-    int a5 = 5;
-    int a6 = 6;
-    int a7 = 7;
-    int a8 = 8;
-    int a9 = 9;
-    int a10 = 10;
-    int a11 = 11;
-    int a12 = 12;
-    int a13 = 13;
     while (1)
     {
-        a1 += 13;
-        a2 += 13;
-        a3 += 13;
-        a4 += 13;
-        a5 += 13;
-        a6 += 13;
-        a7 += 13;
-        a8 += 13;
-        a9 += 13;
-        a10 += 13;
-        a11 += 13;
-        a12 += 13;
-        a13 += 13;
-        printf("%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d,", a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13);
-        switch_context(&proc_a->sp, &proc_b->sp);
+        putchar('A');
+        yield();
 
         for (int i = 0; i < 30000000; i++)
         {
@@ -279,7 +280,7 @@ void proc_b_entry(void)
     while (1)
     {
         putchar('B');
-        switch_context(&proc_b->sp, &proc_a->sp);
+        yield();
 
         for (int i = 0; i < 30000000; i++)
         {
@@ -296,17 +297,17 @@ void kernel_main(void)
     // 例外ハンドラのアドレスをレジスタに登録
     WRITE_CSR(stvec, (uint32_t)kernel_entry);
 
-    proc_a = create_process((uint32_t)proc_a_entry);
+    idle_proc = create_process((uint32_t)NULL);
+    idle_proc->pid = -1;
+    current_proc = idle_proc;
+
     proc_b = create_process((uint32_t)proc_b_entry);
-    proc_a_entry();
+    proc_a = create_process((uint32_t)proc_a_entry);
+    yield();
+    PANIC("switched to idle process");
 
     // 標準ライブラリのテスト
     run_test();
-
-    paddr_t paddr0 = alloc_pages(2);
-    paddr_t paddr1 = alloc_pages(1);
-    printf("alloc_pages test: paddr0=%x\n", paddr0);
-    printf("alloc_pages test: paddr1=%x\n", paddr1);
 
     // 無限ループ
     for (;;)
