@@ -76,6 +76,6 @@ struct process
 {
     int pid;             // プロセスID
     int state;           // プロセスの状態
-    vaddr_t sp;          // コンテキストスイッチ時のスタックポインタ
+    vaddr_t sp;          // コンテキストスイッチ時のカーネルスタックポインタ
     uint8_t stack[8192]; // カーネルスタック
 };
