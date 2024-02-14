@@ -138,10 +138,8 @@ void kernel_main(void)
 
     // 例外ハンドラのアドレスをレジスタに登録
     WRITE_CSR(stvec, (uint32_t)kernel_entry);
-    printf("\n\nHellow %s\n", "World!");
-    printf("1 + 2 = %d, %x\n", 1 + 2, 0x1234abcd);
-    __asm__ __volatile__("unimp"); // 無効な命令
 
+    // 標準ライブラリのテスト
     run_test();
 
     // 無限ループ

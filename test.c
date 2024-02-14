@@ -125,7 +125,7 @@ void strcmp_test()
         PANIC("strcmp_test failed! : strcmp can't judge properly when s2 is smaller and longer than s1.");
     }
 
-    printf("strcmp_test passed\n");
+    printf("strcmp_test passed!\n");
 }
 
 void run_test()
