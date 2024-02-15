@@ -3,7 +3,7 @@ ENTRY(start)
 SECTIONS{
     . = 0x1000000;
 
-    .text:{
+    .text :{
         KEEP(*(.text.start));
         *(.text .text.*);
     }
