@@ -74,8 +74,17 @@ struct trap_frame
 /// @brief PCBの実体となる構造体
 struct process
 {
-    int pid;             // プロセスID
-    int state;           // プロセスの状態
-    vaddr_t sp;          // コンテキストスイッチ時のカーネルスタックポインタ
-    uint8_t stack[8192]; // カーネルスタック
+    int pid;              // プロセスID
+    int state;            // プロセスの状態
+    vaddr_t sp;           // コンテキストスイッチ時のカーネルスタックポインタ
+    uint32_t *page_table; // プロセスのページテーブル
+    uint8_t stack[8192];  // カーネルスタック
 };
+
+// ページング機構の定数
+#define SATP_SV32 (1u << 31) // Sv32有効化ビット
+#define PAGE_V (1 << 0)      // 有効かどうか
+#define PAGE_R (1 << 1)      // 読み込み可能か
+#define PAGE_W (1 << 2)      // 書き込み可能か
+#define PAGE_X (1 << 3)      // 実行可能か
+#define PAGE_U (1 << 4)      // ユーザーモードでアクセス可能か
