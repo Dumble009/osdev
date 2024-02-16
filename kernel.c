@@ -194,9 +194,21 @@ void map_page(
     table0[vpn0] = ((paddr / PAGE_SIZE) << 10) | flags | PAGE_V;
 }
 
+extern char _binary_shell_bin_start[], _binary_shell_bin_size[];
+void user_entry(void)
+{
+    __asm__ __volatile__(
+        "csrw sepc, %[sepc]\n"
+        "csrw sstatus, %[sstatus]\n"
+        "sret\n"
+        :
+        : [sepc] "r"(USER_BASE),
+          [sstatus] "r"(SSTATUS_SPIE));
+}
+
 extern char __kernel_base[];
 struct process procs[PROCS_MAX];
-struct process *create_process(uint32_t pc)
+struct process *create_process(const void *image, size_t image_size)
 {
     // 空いているプロセス管理構造体の探索
     struct process *proc = NULL;
@@ -223,7 +235,7 @@ struct process *create_process(uint32_t pc)
     {
         *--sp = 0;
     }
-    *--sp = (uint32_t)pc; // ra(return address)の初期化
+    *--sp = (uint32_t)user_entry; // ra(return address)の初期化
 
     // ページテーブルの作成
     uint32_t *page_table = (uint32_t *)alloc_pages(1);
@@ -231,6 +243,14 @@ struct process *create_process(uint32_t pc)
     for (paddr_t paddr = (paddr_t)__kernel_base; paddr < (paddr_t)__free_ram_end; paddr += PAGE_SIZE)
     {
         map_page(page_table, paddr, paddr, PAGE_R | PAGE_W | PAGE_X);
+    }
+
+    // ユーザーのページをマッピングする
+    for (uint32_t off = 0; off < image_size; off += PAGE_SIZE)
+    {
+        paddr_t page = alloc_pages(1);
+        memcpy((void *)page, image + off, PAGE_SIZE);
+        map_page(page_table, USER_BASE + off, page, PAGE_U | PAGE_R | PAGE_W | PAGE_X);
     }
 
     // 各フィールドの初期化
@@ -358,17 +378,18 @@ void kernel_main(void)
     // 例外ハンドラのアドレスをレジスタに登録
     WRITE_CSR(stvec, (uint32_t)kernel_entry);
 
-    idle_proc = create_process((uint32_t)NULL);
+    // 標準ライブラリのテスト
+    run_test();
+
+    idle_proc = create_process(NULL, 0);
     idle_proc->pid = -1;
     current_proc = idle_proc;
 
-    proc_b = create_process((uint32_t)proc_b_entry);
-    proc_a = create_process((uint32_t)proc_a_entry);
+    printf("_binary_shell_bin_start = %x\n", (uint32_t)_binary_shell_bin_start);
+    create_process(_binary_shell_bin_start, (size_t)_binary_shell_bin_size);
+
     yield();
     PANIC("switched to idle process");
-
-    // 標準ライブラリのテスト
-    run_test();
 
     // 無限ループ
     for (;;)
