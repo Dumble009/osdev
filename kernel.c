@@ -4,6 +4,9 @@
 
 void yield(void);
 
+struct process *current_proc; // 現在実行中のプロセス
+struct process *idle_proc;    // アイドルプロセス
+
 extern char __bss[], __bss_end[], __stack_top[];
 
 /// @brief SBIの処理を呼び出す関数
@@ -70,6 +73,11 @@ void handle_syscall(struct trap_frame *f)
             yield();
         }
         break;
+    case SYS_EXIT:
+        printf("process %d exited\n", current_proc->pid);
+        current_proc->state = PROC_EXITED;
+        yield();
+        PANIC("unreachable");
     default:
         PANIC("unexpected syscall a3=%x\n", f->a3);
     }
@@ -341,9 +349,6 @@ __attribute__((naked)) void switch_context(
         "addi sp, sp, 13 * 4\n"
         "ret\n");
 }
-
-struct process *current_proc; // 現在実行中のプロセス
-struct process *idle_proc;    // アイドルプロセス
 
 void yield(void)
 {

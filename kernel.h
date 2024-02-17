@@ -70,6 +70,7 @@ struct trap_frame
 #define PROCS_MAX 8     // 最大プロセス数
 #define PROC_UNUSED 0   // プロセスの状態 : 未使用
 #define PROC_RUNNABLE 1 // プロセスの状態 : 実行可能
+#define PROC_EXITED 2   // プロセスの状態 : 終了済み
 
 /// @brief PCBの実体となる構造体
 struct process
