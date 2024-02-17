@@ -21,6 +21,7 @@ typedef uint32_t vaddr_t;
 #define PAGE_SIZE 4096
 
 #define SYS_PUTCHAR 1 // putcharのシステムコール識別番号
+#define SYS_GETCHAR 2 // getcharのシステムコール識別番号
 
 #define va_list __builtin_va_list
 #define va_start __builtin_va_start
