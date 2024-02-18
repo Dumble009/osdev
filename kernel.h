@@ -96,6 +96,9 @@ struct process
 // ユーザーモードへの切り替え時に割り込みを有効化するフラグ
 #define SSTATUS_SPIE (1 << 5)
 
+// カーネルによるユーザーのメモリ領域へのアクセスの許可
+#define SSTATUS_SUM (1 << 18)
+
 #define SCAUSE_ECALL 8 // 例外の発生要因 : システムコール
 
 // ディスクIO関連の定義

@@ -22,9 +22,11 @@ typedef uint32_t vaddr_t;
 #define PAGE_SIZE 4096
 
 // システムコール識別番号
-#define SYS_PUTCHAR 1 // putchar
-#define SYS_GETCHAR 2 // getchar
-#define SYS_EXIT 3    // exit
+#define SYS_PUTCHAR 1   // 文字の出力
+#define SYS_GETCHAR 2   // 文字の入力
+#define SYS_EXIT 3      // プロセスの終了
+#define SYS_READFILE 4  // ファイル読み込み
+#define SYS_WRITEFILE 5 // ファイル書き込み
 
 #define va_list __builtin_va_list
 #define va_start __builtin_va_start
