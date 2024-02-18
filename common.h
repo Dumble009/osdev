@@ -2,6 +2,7 @@
 
 typedef int bool;
 typedef unsigned char uint8_t;
+typedef unsigned short uint16_t;
 typedef unsigned int uint32_t;
 typedef long int32_t;
 typedef unsigned int uint32_t;
@@ -16,7 +17,7 @@ typedef uint32_t vaddr_t;
 #define NULL ((void *)0)
 #define align_up(value, align) __builtin_align_up(value, align)
 #define is_aligned(value, align) __builtin_is_aligned(value, align)
-#define offsetof(value, member) __builtin_offsetof(type, member)
+#define offsetof(type, member) __builtin_offsetof(type, member)
 
 #define PAGE_SIZE 4096
 
